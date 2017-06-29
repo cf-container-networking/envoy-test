@@ -1,3 +1,5 @@
 envoy
 bin/
 certs/
+tmp
+pkg
