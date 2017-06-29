@@ -1,0 +1,38 @@
+{
+    "listeners": [{
+        "address": "tcp://0.0.0.0:10001",
+        "filters": [{
+            "type": "read",
+            "name": "tcp_proxy",
+            "config": {
+              "stat_prefix": "ingress_tcp",
+              "route_config": {
+                  "routes": [{
+                    "cluster": "service_local"
+               }]
+            }
+          }
+        }],
+        "ssl_context": {
+          "cert_chain_file": "certs/server.crt",
+          "private_key_file": "certs/server.key",
+          "ca_cert_file": "certs/ca.crt",
+          "verify_subject_alt_name": [ "client" ]
+        }
+    }],
+    "admin": {
+        "access_log_path": "/tmp/admin_access.log",
+        "address": "tcp://127.0.0.1:9901"
+    },
+    "cluster_manager": {
+        "clusters": [{
+            "name": "service_local",
+            "connect_timeout_ms": 2500,
+            "type": "static",
+            "lb_type": "round_robin",
+            "hosts": [{
+                "url": "tcp://127.0.0.1:8080"
+            }]
+        }]
+    }
+}

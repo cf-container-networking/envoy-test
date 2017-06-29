@@ -1,0 +1,36 @@
+#!/bin/bash
+
+set -o pipefail
+set -eu
+
+rm -rf certs
+mkdir -p bin certs
+
+go build -o bin/certstrap github.com/square/certstrap
+
+
+## set up certs for endpoints
+bin/certstrap --depot-path=certs init \
+  --common-name "ca" \
+  --passphrase '' \
+  --key-bits 2048
+
+bin/certstrap --depot-path=certs request-cert \
+  --organization "app:1" \
+  --common-name "client" \
+  --passphrase '' \
+  --key-bits 2048 \
+  --ip 172.17.0.3 \
+  --domain client
+
+bin/certstrap --depot-path=certs sign client --CA ca
+
+bin/certstrap --depot-path=certs request-cert \
+  --organization "app:2" \
+  --common-name "server" \
+  --passphrase '' \
+  --key-bits 2048 \
+  --ip 172.17.0.2 \
+  --domain server
+
+bin/certstrap --depot-path=certs sign server --CA ca
